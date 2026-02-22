@@ -17,9 +17,9 @@ export function LeftPanel() {
       data: {
         id: "",
         customerEmail: "",
-        amount: "",
+        amount: 0,
         currency: "USD",
-        date: "",
+        date: new Date(),
       },
     });
     selectRecord(rawRecords.length);

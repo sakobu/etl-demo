@@ -1,7 +1,7 @@
-import { useForm } from "@railway-ts/use-form";
-import { transactionSchema, type Transaction } from "../api/etl";
-import { useRawRecords, useETLActions } from "../store/etlStore";
 import type { ReactNode } from "react";
+import { useForm } from "@railway-ts/use-form";
+import { transactionSchema } from "../api/etl";
+import { useRawRecords, useETLActions } from "../store/etlStore";
 
 type RecordEditorProps = {
   index: number;
@@ -13,15 +13,9 @@ export function RecordEditor({ index }: RecordEditorProps) {
   const record = rawRecords[index];
 
   const form = useForm(transactionSchema, {
-    initialValues: record.data as unknown as Transaction,
+    initialValues: record.data,
     onSubmit: (values) => {
-      updateRecord(index, {
-        id: values.id,
-        customerEmail: values.customerEmail,
-        amount: String(values.amount),
-        currency: values.currency,
-        date: values.date.toISOString().split("T")[0],
-      });
+      updateRecord(index, values);
     },
   });
 

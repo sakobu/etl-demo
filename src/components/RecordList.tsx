@@ -54,17 +54,17 @@ export function RecordList() {
               <span className="text-text-secondary">
                 #{record.row}{" "}
                 <span className="text-text-primary">
-                  {(data.id as string) || "(empty)"}
+                  {data.id || "(empty)"}
                 </span>
               </span>
-              {data.amount && data.currency ? (
+              {data.currency ? (
                 <span className="text-text-muted">
-                  {data.amount as string} {data.currency as string}
+                  {data.amount.toFixed(2)} {data.currency}
                 </span>
               ) : null}
             </div>
             <div className="text-[10px] text-text-muted truncate">
-              {(data.customerEmail as string) || "(no email)"}
+              {data.customerEmail || "(no email)"}
             </div>
           </button>
         );

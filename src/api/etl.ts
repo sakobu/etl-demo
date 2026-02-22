@@ -44,12 +44,15 @@ import {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const transactionSchema = object({
-  id: required(chain(string(), nonEmpty("Must be a valid ID"))),
-  customerEmail: required(chain(string(), nonEmpty(), email())),
+  id: required(chain(string(), nonEmpty("ID is required"))),
+  customerEmail: required(
+    chain(string(), nonEmpty("Email is required"), email()),
+  ),
   amount: required(chain(parseNumber(), min(0.01, "Amount must be positive"))),
   currency: required(
     chain(
       string(),
+      nonEmpty("Currency is required"),
       refine((s) => ["USD", "EUR", "GBP"].includes(s), "Unsupported currency"),
     ),
   ),
@@ -57,6 +60,11 @@ export const transactionSchema = object({
 });
 
 export type Transaction = InferSchemaType<typeof transactionSchema>;
+
+export type RawRecord = {
+  row: number;
+  data: Transaction;
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Domain Types
@@ -132,11 +140,6 @@ export type BatchResult = {
   combine: Result<ProcessedTransaction[], string>;
   combineAll: Result<ProcessedTransaction[], string[]>;
   durationMs: number;
-};
-
-export type RawRecord = {
-  row: number;
-  data: Record<string, unknown>;
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -429,19 +432,19 @@ export const DEFAULT_RECORDS: RawRecord[] = [
     data: {
       id: "tx-001",
       customerEmail: "alice@example.com",
-      amount: "150.00",
+      amount: 150,
       currency: "EUR",
-      date: "2025-03-15",
+      date: new Date("2025-03-15"),
     },
   },
   {
     row: 2,
     data: {
-      id: "",
-      customerEmail: "not-an-email",
-      amount: "-5",
-      currency: "BTC",
-      date: "not-a-date",
+      id: "tx-002",
+      customerEmail: "bob@example.com",
+      amount: 50,
+      currency: "USD",
+      date: new Date("2024-12-01"),
     },
   },
   {
@@ -449,9 +452,9 @@ export const DEFAULT_RECORDS: RawRecord[] = [
     data: {
       id: "tx-003",
       customerEmail: "carol@example.com",
-      amount: "75.00",
+      amount: 75,
       currency: "USD",
-      date: "2025-03-16",
+      date: new Date("2025-03-16"),
     },
   },
   {
@@ -459,9 +462,9 @@ export const DEFAULT_RECORDS: RawRecord[] = [
     data: {
       id: "tx-004",
       customerEmail: "alice@example.com",
-      amount: "5.00",
+      amount: 5,
       currency: "USD",
-      date: "2025-03-17",
+      date: new Date("2025-03-17"),
     },
   },
   {
@@ -469,9 +472,9 @@ export const DEFAULT_RECORDS: RawRecord[] = [
     data: {
       id: "tx-005",
       customerEmail: "unknown@example.com",
-      amount: "200.00",
+      amount: 200,
       currency: "GBP",
-      date: "2025-03-18",
+      date: new Date("2025-03-18"),
     },
   },
 ];

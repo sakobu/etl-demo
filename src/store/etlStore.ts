@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import {
   type RawRecord,
+  type Transaction,
   type BatchResult,
   runBatch,
   DEFAULT_RECORDS,
@@ -23,7 +24,7 @@ type ETLState = {
 type ETLActions = {
   setRecords: (records: RawRecord[]) => void;
   addRecord: (record: RawRecord) => void;
-  updateRecord: (index: number, data: Record<string, unknown>) => void;
+  updateRecord: (index: number, data: Transaction) => void;
   removeRecord: (index: number) => void;
   runPipeline: () => Promise<void>;
   selectRecord: (index: number | null) => void;
