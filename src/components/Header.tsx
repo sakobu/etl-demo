@@ -4,6 +4,7 @@ import {
   useBatchResult,
   useETLActions,
 } from "../store/etlStore";
+import { Button } from "./ui/Button";
 
 export function Header() {
   const isProcessing = useIsProcessing();
@@ -28,13 +29,13 @@ export function Header() {
           </span>
         )}
 
-        <button
+        <Button
           onClick={runPipeline}
           disabled={isProcessing}
-          className="bg-accent hover:bg-accent-hover rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-full px-4 py-1.5 text-sm font-medium"
         >
           {isProcessing ? "Processing..." : "Run Pipeline"}
-        </button>
+        </Button>
       </div>
     </header>
   );

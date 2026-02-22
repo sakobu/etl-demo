@@ -2,9 +2,10 @@ import {
   useRawRecords,
   useSelectedRecordIndex,
   useETLActions,
-} from "../../store/etlStore";
-import { RecordList } from "../RecordList";
-import { RecordEditor } from "../RecordEditor";
+} from "../../../store/etlStore";
+import { Button } from "../../ui/Button";
+import { RecordList } from "./RecordList";
+import { RecordEditor } from "./RecordEditor";
 
 export function LeftPanel() {
   const rawRecords = useRawRecords();
@@ -43,21 +44,23 @@ export function LeftPanel() {
       </div>
 
       <div className="flex items-center gap-1.5">
-        <button
+        <Button
+          variant="secondary"
           type="button"
           onClick={handleAdd}
-          className="bg-surface-700 hover:bg-surface-600 text-text-secondary text-[10px] px-2 py-1 rounded-sm transition-colors"
+          className="text-[10px] px-2 py-1 rounded-sm"
         >
           + Add
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="secondary"
           type="button"
           onClick={handleDelete}
           disabled={selectedIndex === null}
-          className="bg-surface-700 hover:bg-surface-600 text-text-secondary text-[10px] px-2 py-1 rounded-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="text-[10px] px-2 py-1 rounded-sm"
         >
           Del
-        </button>
+        </Button>
       </div>
 
       <RecordList />

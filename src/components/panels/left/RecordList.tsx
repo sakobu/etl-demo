@@ -3,7 +3,8 @@ import {
   useSelectedRecordIndex,
   useBatchResult,
   useETLActions,
-} from "../store/etlStore";
+} from "../../../store/etlStore";
+import { Button } from "../../ui/Button";
 import { isOk, isErr } from "@railway-ts/pipelines/result";
 
 export function RecordList() {
@@ -40,11 +41,12 @@ export function RecordList() {
         const data = record.data;
 
         return (
-          <button
+          <Button
             key={i}
-            type="button"
+            variant="ghost"
+            aria-pressed={isSelected}
             onClick={() => selectRecord(isSelected ? null : i)}
-            className={`w-full text-left border-l-[3px] px-2 py-1.5 rounded-r-sm transition-colors ${borderClass} ${
+            className={`w-full text-left border-l-[3px] px-2 py-1.5 rounded-r-sm ${borderClass} ${
               isSelected
                 ? "bg-surface-700"
                 : "hover:bg-surface-700/50"
@@ -66,7 +68,7 @@ export function RecordList() {
             <div className="text-[10px] text-text-muted truncate">
               {data.customerEmail || "(no email)"}
             </div>
-          </button>
+          </Button>
         );
       })}
     </div>

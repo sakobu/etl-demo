@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Header } from "./components/Header";
 import { StatusBar } from "./components/StatusBar";
-import { LeftPanel } from "./components/panels/LeftPanel";
+import { LeftPanel } from "./components/panels/left/LeftPanel";
 import { CenterPanel } from "./components/panels/CenterPanel";
 import { RightPanel } from "./components/panels/RightPanel";
 
