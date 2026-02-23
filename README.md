@@ -1,5 +1,7 @@
 # ETL Pipeline Dashboard
 
+[Live demo on StackBlitz](https://stackblitz.com/github/sakobu/etl-demo?file=src%2FApp.tsx)
+
 An interactive demo application that visualizes Railway-Oriented Programming patterns through a simulated ETL pipeline. The schema is the single source of truth -- the same declaration drives pipeline validation, TypeScript types, and the editor form with no glue code between business logic and UI.
 
 ## What It Does
