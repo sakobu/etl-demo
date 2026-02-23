@@ -3,7 +3,7 @@ import { Header } from "./components/Header";
 import { StatusBar } from "./components/StatusBar";
 import { LeftPanel } from "./components/panels/left/LeftPanel";
 import { CenterPanel } from "./components/panels/center/CenterPanel";
-import { RightPanel } from "./components/panels/RightPanel";
+import { RightPanel } from "./components/panels/right/RightPanel";
 
 type Tab = "left" | "center" | "right";
 
