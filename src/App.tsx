@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Header } from "./components/Header";
 import { StatusBar } from "./components/StatusBar";
 import { LeftPanel } from "./components/panels/left/LeftPanel";
-import { CenterPanel } from "./components/panels/CenterPanel";
+import { CenterPanel } from "./components/panels/center/CenterPanel";
 import { RightPanel } from "./components/panels/RightPanel";
 
 type Tab = "left" | "center" | "right";
