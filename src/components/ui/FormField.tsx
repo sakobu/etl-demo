@@ -1,17 +1,24 @@
 import type { ReactNode } from "react";
+import type { UseFormReturn, ExtractFieldPaths } from "@railway-ts/use-form";
 
-type FormFieldProps = {
+function deriveLabel(name: string): string {
+  return name
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/^./, (c) => c.toUpperCase());
+}
+
+type FormFieldLayoutProps = {
   label: string;
-  name: string;
+  htmlFor: string;
   error?: string;
   children: ReactNode;
 };
 
-function FormField({ label, name, error, children }: FormFieldProps) {
+function FormFieldLayout({ label, htmlFor, error, children }: FormFieldLayoutProps) {
   return (
     <div>
       <label
-        htmlFor={name}
+        htmlFor={htmlFor}
         className="block text-[10px] text-text-muted uppercase tracking-wider mb-0.5"
       >
         {label}
@@ -22,23 +29,23 @@ function FormField({ label, name, error, children }: FormFieldProps) {
   );
 }
 
-type ConnectedFormFieldProps<TValues extends Record<string, unknown>> = {
-  label: string;
-  name: keyof TValues & string;
-  form: { touched: Record<string, boolean>; errors: Record<string, string> };
+type FormFieldProps<TValues extends Record<string, unknown>> = {
+  label?: string;
+  name: ExtractFieldPaths<TValues>;
+  form: UseFormReturn<TValues>;
   children: ReactNode;
 };
 
-export function ConnectedFormField<TValues extends Record<string, unknown>>({
+export function FormField<TValues extends Record<string, unknown>>({
   label,
   name,
   form,
   children,
-}: ConnectedFormFieldProps<TValues>) {
-  const error = form.touched[name] ? form.errors[name] : undefined;
+}: FormFieldProps<TValues>) {
+  const displayLabel = label ?? deriveLabel(name);
   return (
-    <FormField label={label} name={name} error={error}>
+    <FormFieldLayout label={displayLabel} htmlFor={form.getFieldId(name)} error={form.getFieldError(name)}>
       {children}
-    </FormField>
+    </FormFieldLayout>
   );
 }

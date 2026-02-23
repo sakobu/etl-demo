@@ -1,13 +1,10 @@
 import { useForm } from "@railway-ts/use-form";
 import { transactionSchema } from "../../../api/etl";
-import type { Transaction } from "../../../api/etl";
 import { useRawRecords, useETLActions } from "../../../store/etlStore";
-import { ConnectedFormField } from "../../ui/FormField";
+import { FormField } from "../../ui/FormField";
 import { Input } from "../../ui/Input";
 import { Select } from "../../ui/Select";
 import { Button } from "../../ui/Button";
-
-const Field = ConnectedFormField<Transaction>;
 
 type RecordEditorProps = {
   index: number;
@@ -35,29 +32,29 @@ export function RecordEditor({ index }: RecordEditorProps) {
         onSubmit={(e) => void form.handleSubmit(e)}
         className="flex flex-col gap-2"
       >
-        <Field form={form} name="id" label="ID">
+        <FormField form={form} name="id" label="ID">
           <Input {...form.getFieldProps("id")} />
-        </Field>
+        </FormField>
 
-        <Field form={form} name="customerEmail" label="Email">
+        <FormField form={form} name="customerEmail" label="Email">
           <Input {...form.getFieldProps("customerEmail")} />
-        </Field>
+        </FormField>
 
-        <Field form={form} name="amount" label="Amount">
+        <FormField form={form} name="amount">
           <Input {...form.getFieldProps("amount")} inputMode="decimal" />
-        </Field>
+        </FormField>
 
-        <Field form={form} name="currency" label="Currency">
+        <FormField form={form} name="currency">
           <Select {...form.getSelectFieldProps("currency")}>
             <option value="USD">USD</option>
             <option value="EUR">EUR</option>
             <option value="GBP">GBP</option>
           </Select>
-        </Field>
+        </FormField>
 
-        <Field form={form} name="date" label="Date">
+        <FormField form={form} name="date">
           <Input {...form.getFieldProps("date")} type="date" />
-        </Field>
+        </FormField>
 
         <Button
           type="submit"
