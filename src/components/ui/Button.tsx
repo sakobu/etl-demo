@@ -14,7 +14,7 @@ type ButtonProps = ComponentProps<"button"> & {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "primary", className, ...props }, ref) => {
-    const base = `${variantClasses[variant]} transition-colors`;
+    const base = `${variantClasses[variant]} cursor-pointer transition-colors`;
     return (
       <button
         ref={ref}

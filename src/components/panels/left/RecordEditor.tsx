@@ -19,7 +19,6 @@ export function RecordEditor({ index }: RecordEditorProps) {
     initialValues: record.data,
     onSubmit: (values) => {
       updateRecord(index, values);
-      form.resetForm();
     },
   });
 
