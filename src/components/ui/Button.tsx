@@ -1,4 +1,4 @@
-import { forwardRef, type ComponentProps } from "react";
+import type { ComponentProps } from "react";
 
 const variantClasses = {
   primary:
@@ -12,15 +12,7 @@ type ButtonProps = ComponentProps<"button"> & {
   variant?: keyof typeof variantClasses;
 };
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = "primary", className, ...props }, ref) => {
-    const base = `${variantClasses[variant]} cursor-pointer transition-colors`;
-    return (
-      <button
-        ref={ref}
-        className={className ? `${base} ${className}` : base}
-        {...props}
-      />
-    );
-  },
-);
+export function Button({ variant = "primary", className, ...props }: ButtonProps) {
+  const base = `${variantClasses[variant]} cursor-pointer transition-colors`;
+  return <button className={className ? `${base} ${className}` : base} {...props} />;
+}

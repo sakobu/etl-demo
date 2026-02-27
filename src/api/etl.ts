@@ -1,12 +1,3 @@
-/**
- * Railway-Oriented TypeScript — ETL Pipeline (Phase 1: UI-Ready)
- *
- * Refactored for consumption by a React dashboard.
- * Every stage is independently callable and traced — no console side-effects.
- * The composed pipeline (`processTransaction`) is still available for
- * non-instrumented use, but `runRecord` / `runBatch` are the primary API.
- */
-
 import {
   validate,
   object,

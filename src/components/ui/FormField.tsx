@@ -14,7 +14,12 @@ type FormFieldLayoutProps = {
   children: ReactNode;
 };
 
-function FormFieldLayout({ label, htmlFor, error, children }: FormFieldLayoutProps) {
+function FormFieldLayout({
+  label,
+  htmlFor,
+  error,
+  children,
+}: FormFieldLayoutProps) {
   return (
     <div>
       <label
@@ -44,7 +49,11 @@ export function FormField<TValues extends Record<string, unknown>>({
 }: FormFieldProps<TValues>) {
   const displayLabel = label ?? deriveLabel(name);
   return (
-    <FormFieldLayout label={displayLabel} htmlFor={form.getFieldId(name)} error={form.getFieldError(name)}>
+    <FormFieldLayout
+      label={displayLabel}
+      htmlFor={form.getFieldId(name)}
+      error={form.getFieldError(name)}
+    >
       {children}
     </FormFieldLayout>
   );
