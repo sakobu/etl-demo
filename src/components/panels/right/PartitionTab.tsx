@@ -1,4 +1,5 @@
 import type { ProcessedTransaction } from "../../../api/etl";
+import { ArrowRightIcon, DotSeparatorIcon } from "../../ui/icons";
 import { TransactionCard } from "./TransactionCard";
 
 type Props = {
@@ -11,7 +12,7 @@ export function PartitionTab({ partition }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">
-        Keep both sides &middot; ETL-friendly
+        Keep both sides <DotSeparatorIcon className="inline w-[0.25em] h-[0.25em] align-middle" /> ETL-friendly
       </p>
 
       {/* Successes */}
@@ -54,7 +55,7 @@ export function PartitionTab({ partition }: Props) {
       {/* Educational callout */}
       <div className="rounded-md border border-accent/30 bg-accent/5 px-3 py-2">
         <p className="text-xs text-text-secondary">
-          <span className="text-accent font-medium">&rarr;</span> Partial
+          <ArrowRightIcon className="inline w-[1em] h-[1em] align-[-0.125em] text-accent" /> Partial
           success is useful &mdash; good records are saved while bad ones are
           quarantined for review.
         </p>

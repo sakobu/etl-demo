@@ -1,5 +1,6 @@
 import type { StageTrace } from "../../../api/etl";
 import { STAGE_LABELS } from "./stageHelpers";
+import { CheckIcon, HalfCircleIcon, CrossIcon } from "../../ui/icons";
 
 type Props = {
   stage: StageTrace;
@@ -38,11 +39,11 @@ export function StageBox({ stage, isExpanded, onToggle, recovered }: Props) {
       <div className="flex items-center justify-between gap-2">
         <span className="font-semibold text-text-primary flex items-center gap-1.5">
           {isOk ? (
-            <span className="text-status-success">&#x2713;</span>
+            <CheckIcon className="inline w-[1em] h-[1em] align-[-0.125em] text-status-success" />
           ) : isRecovered ? (
-            <span className="text-status-partial">&#x25D0;</span>
+            <HalfCircleIcon className="inline w-[1em] h-[1em] align-[-0.125em] text-status-partial" />
           ) : (
-            <span className="text-status-fail">&#x2717;</span>
+            <CrossIcon className="inline w-[1em] h-[1em] align-[-0.125em] text-status-fail" />
           )}
           {label}
         </span>

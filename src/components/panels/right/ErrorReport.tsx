@@ -1,7 +1,9 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { isOk } from "@railway-ts/pipelines/result";
 import type { RecordTrace } from "../../../api/etl";
 import { STAGE_LABELS } from "../center/stageHelpers";
+import { CheckIcon, CrossIcon, HalfCircleIcon, DashIcon, ChevronDownIcon, ChevronRightIcon } from "../../ui/icons";
 
 export function ErrorReport({ records }: { records: RecordTrace[] }) {
   const [open, setOpen] = useState(false);
@@ -14,7 +16,7 @@ export function ErrorReport({ records }: { records: RecordTrace[] }) {
         onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-text-secondary cursor-pointer hover:bg-surface-800 transition-colors rounded-md"
       >
-        <span className="text-text-muted">{open ? "▼" : "▶"}</span>
+        {open ? <ChevronDownIcon className="inline w-[1em] h-[1em] align-[-0.125em] text-text-muted" /> : <ChevronRightIcon className="inline w-[1em] h-[1em] align-[-0.125em] text-text-muted" />}
         Error Report
         <span className="ml-auto text-text-muted font-mono">
           {records.length} rows
@@ -27,20 +29,20 @@ export function ErrorReport({ records }: { records: RecordTrace[] }) {
             const isExpanded = expandedRow === record.row;
             const final = record.final;
 
-            let statusIcon: string;
+            let statusIcon: ReactNode;
             let statusColor: string;
             let statusText: string;
 
             if (!isOk(final)) {
-              statusIcon = "✗";
+              statusIcon = <CrossIcon className="inline w-[1em] h-[1em] align-[-0.125em]" />;
               statusColor = "text-status-fail";
               statusText = final.error;
             } else if (final.value.partial) {
-              statusIcon = "◐";
+              statusIcon = <HalfCircleIcon className="inline w-[1em] h-[1em] align-[-0.125em]" />;
               statusColor = "text-status-partial";
               statusText = "partial";
             } else {
-              statusIcon = "✓";
+              statusIcon = <CheckIcon className="inline w-[1em] h-[1em] align-[-0.125em]" />;
               statusColor = "text-status-success";
               statusText = "ok";
             }
@@ -61,29 +63,27 @@ export function ErrorReport({ records }: { records: RecordTrace[] }) {
                   <span className="text-text-muted truncate flex-1 text-left font-mono">
                     {statusText}
                   </span>
-                  <span className="text-text-muted">
-                    {isExpanded ? "▼" : "▶"}
-                  </span>
+                  {isExpanded ? <ChevronDownIcon className="inline w-[1em] h-[1em] align-[-0.125em] text-text-muted" /> : <ChevronRightIcon className="inline w-[1em] h-[1em] align-[-0.125em] text-text-muted" />}
                 </button>
 
                 {/* Expanded stage trace */}
                 {isExpanded && (
                   <div className="px-3 pb-2 ml-12 flex flex-col gap-0.5">
                     {record.stages.map((stage) => {
-                      let icon: string;
+                      let icon: ReactNode;
                       let color: string;
                       let detail: string;
 
                       if (stage.status === "ok") {
-                        icon = "✓";
+                        icon = <CheckIcon className="inline w-[1em] h-[1em] align-[-0.125em]" />;
                         color = "text-status-success";
                         detail = `${stage.durationMs.toFixed(1)}ms`;
                       } else if (stage.status === "err") {
-                        icon = "✗";
+                        icon = <CrossIcon className="inline w-[1em] h-[1em] align-[-0.125em]" />;
                         color = "text-status-fail";
                         detail = stage.error;
                       } else {
-                        icon = "—";
+                        icon = <DashIcon className="inline w-[1em] h-[1em] align-[-0.125em]" />;
                         color = "text-surface-500";
                         detail = "skipped";
                       }

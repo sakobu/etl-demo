@@ -1,4 +1,5 @@
 import type { ProcessedTransaction } from "../../../api/etl";
+import { HalfCircleIcon } from "../../ui/icons";
 
 export function TransactionCard({ transaction: tx }: { transaction: ProcessedTransaction }) {
   if (tx.partial) {
@@ -7,7 +8,7 @@ export function TransactionCard({ transaction: tx }: { transaction: ProcessedTra
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-xs font-mono text-text-secondary">{tx.id}</span>
           <span className="text-[10px] font-medium text-status-partial uppercase tracking-wide">
-            &#9684; partial
+            <HalfCircleIcon className="inline w-[1em] h-[1em] align-[-0.125em]" /> partial
           </span>
         </div>
         <p className="mt-1 text-xs text-text-muted">{tx.message}</p>

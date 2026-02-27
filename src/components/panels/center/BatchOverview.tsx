@@ -5,6 +5,7 @@ import {
   stageStatusClasses,
   isRecoveredPartial,
 } from "./stageHelpers";
+import { HalfCircleIcon, CrossIcon } from "../../ui/icons";
 
 type Props = {
   batchResult: BatchResult;
@@ -25,17 +26,9 @@ function DotIcon({
   }
   if (status === "err") {
     if (recovered) {
-      return (
-        <span className={`${cls.text} text-[10px] font-bold leading-none`}>
-          &#x25D0;
-        </span>
-      );
+      return <HalfCircleIcon className={`w-2 h-2 ${cls.text}`} />;
     }
-    return (
-      <span className={`${cls.text} text-[10px] font-bold leading-none`}>
-        &#x2717;
-      </span>
-    );
+    return <CrossIcon className={`w-2 h-2 ${cls.text}`} />;
   }
   // skipped
   return (

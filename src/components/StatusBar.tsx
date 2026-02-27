@@ -1,4 +1,5 @@
 import { useBatchResult } from "../store/etlStore";
+import { CheckIcon, CrossIcon, HalfCircleIcon, DotSeparatorIcon } from "./ui/icons";
 
 export function StatusBar() {
   const batchResult = useBatchResult();
@@ -13,17 +14,17 @@ export function StatusBar() {
         <>
           <div className="font-mono text-sm flex gap-2 items-center">
             <span className="text-status-success">
-              ✓ {batchResult.summary.succeeded}
+              <CheckIcon className="inline w-[1em] h-[1em] align-[-0.125em]" /> {batchResult.summary.succeeded}
             </span>
-            <span className="text-text-muted">·</span>
+            <DotSeparatorIcon className="inline w-[0.25em] h-[0.25em] align-middle text-text-muted" />
             <span className="text-status-fail">
-              ✗ {batchResult.summary.failed}
+              <CrossIcon className="inline w-[1em] h-[1em] align-[-0.125em]" /> {batchResult.summary.failed}
             </span>
-            <span className="text-text-muted">·</span>
+            <DotSeparatorIcon className="inline w-[0.25em] h-[0.25em] align-middle text-text-muted" />
             <span className="text-status-partial">
-              ◐ {batchResult.summary.partial}
+              <HalfCircleIcon className="inline w-[1em] h-[1em] align-[-0.125em]" /> {batchResult.summary.partial}
             </span>
-            <span className="text-text-muted">·</span>
+            <DotSeparatorIcon className="inline w-[0.25em] h-[0.25em] align-middle text-text-muted" />
             <span className="text-text-secondary">
               {batchResult.summary.total} total
             </span>
@@ -33,7 +34,7 @@ export function StatusBar() {
             <span className="text-text-secondary">
               {batchResult.partition.successes.length} passed
             </span>
-            <span className="text-text-muted">·</span>
+            <DotSeparatorIcon className="inline w-[0.25em] h-[0.25em] align-middle text-text-muted" />
             <span className="text-text-secondary">
               {batchResult.partition.failures.length} rejected
             </span>

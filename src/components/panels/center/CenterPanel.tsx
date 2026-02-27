@@ -3,6 +3,7 @@ import {
   useSelectedRecordIndex,
   useETLActions,
 } from "../../../store/etlStore";
+import { ArrowLeftIcon } from "../../ui/icons";
 import { StageLane } from "./StageLane";
 import { BatchOverview } from "./BatchOverview";
 
@@ -58,7 +59,7 @@ export function CenterPanel() {
           onClick={() => selectRecord(null)}
           className="text-[10px] text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
         >
-          &larr; All records
+          <ArrowLeftIcon className="inline w-[1em] h-[1em] align-[-0.125em]" /> All records
         </button>
       </div>
       {/* key resets expandedStage state inside StageLane on record change */}
