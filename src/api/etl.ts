@@ -16,6 +16,8 @@ import {
 
 import { flowAsync, flow } from "@railway-ts/pipelines/composition";
 
+import { type Option, some, none, isSome } from "@railway-ts/pipelines/option";
+
 import {
   ok,
   err,
@@ -280,7 +282,7 @@ const createTracer = (): Tracer => {
   const startTime = performance.now();
   const entries: TracerEntry[] = [];
   let errTimestamp = 0;
-  let errMsg: string | undefined;
+  let errMsg: Option<string> = none();
 
   return {
     recordOk: (stage, value) => {
@@ -288,7 +290,7 @@ const createTracer = (): Tracer => {
     },
     recordErr: (error) => {
       errTimestamp = performance.now();
-      errMsg = error;
+      errMsg = some(error);
     },
     buildStages: () => {
       const okSet = new Set(entries.map((e) => e.stage));
@@ -309,7 +311,7 @@ const createTracer = (): Tracer => {
 
         // First missing stage whose predecessor was ok = the failing stage
         const prevWasOk = i === 0 || okSet.has(STAGE_ORDER[i - 1]);
-        if (prevWasOk && errMsg !== undefined) {
+        if (prevWasOk && isSome(errMsg)) {
           const prevTime =
             entries.length > 0
               ? entries[entries.length - 1].timestamp
@@ -317,7 +319,7 @@ const createTracer = (): Tracer => {
           return {
             stage,
             status: "err",
-            error: errMsg,
+            error: errMsg.value,
             durationMs: errTimestamp - prevTime,
           };
         }

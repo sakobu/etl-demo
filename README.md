@@ -83,3 +83,23 @@ src/
 - `combineAll` -- fails the entire batch and collects every error
 
 **Schema as single source of truth** -- `transactionSchema` is declared once. It infers the TypeScript types, runs validation inside the pipeline, and powers the record editor form through `@railway-ts/use-form`. There is no resolver, no adapter, and no duplicated type definition. The same rules that reject a record in the pipeline are the same rules that show an inline error in the form.
+
+**Layer-aware absent-value idioms** — use `Option<T>` and `Result<T,E>` in domain / pipeline
+code; use `T | null` in UI state.
+
+| Layer | Location | Absent-value idiom |
+|---|---|---|
+| Domain / pipeline | `etl.ts` | `Option<T>`, `Result<T,E>` |
+| UI state | `etlStore.ts` | `T \| null` |
+
+In domain code, `Option<T>` makes absence semantically explicit — `none()` vs `some(value)`,
+guarded with `isSome()`. The tracer inside `createTracer()` uses `errMsg: Option<string>` so
+that "no error yet" vs "error captured" is encoded in the type rather than a comment. In UI
+state, `T | null` is idiomatic: JSX short-circuit (`&&`), optional chaining (`?.`), and Zustand
+DevTools all treat `null` as the canonical absent sentinel. Wrapping store state in `Option`
+would add `isSome(opt)` then `opt.value` unwrapping with no type-safety gain beyond what
+`strictNullChecks` already provides.
+
+Both types use Symbol branding (`OPTION_BRAND`, `RESULT_BRAND`) rather than a `_tag` string
+discriminant; the runtime check is a plain boolean property — `opt.some` for `Option`,
+`result.ok` for `Result`.
