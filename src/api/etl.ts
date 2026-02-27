@@ -30,9 +30,9 @@ import {
   type Result,
 } from "@railway-ts/pipelines/result";
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // Schema
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 
 export const transactionSchema = object({
   id: required(chain(string(), nonEmpty("ID is required"))),
@@ -57,9 +57,9 @@ export type RawRecord = {
   data: Transaction;
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // Domain Types
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 
 export type NormalizedTransaction = Transaction & {
   partial: false;
@@ -81,9 +81,9 @@ export type PartialTransaction = {
 
 export type ProcessedTransaction = EnrichedTransaction | PartialTransaction;
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Trace Types — the instrumentation layer
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
+// Trace Types - the instrumentation layer
+// ===============================================================================
 
 export type StageName = "validate" | "normalize" | "businessRules" | "enrich";
 
@@ -133,9 +133,9 @@ export type BatchResult = {
   durationMs: number;
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // Reference Data
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 
 const USD_RATES: Record<string, number> = { USD: 1, EUR: 1.08, GBP: 1.27 };
 export const MINIMUM_AMOUNT_USD = 10;
@@ -145,9 +145,9 @@ const MOCK_CUSTOMERS: Record<string, { name: string; tier: string }> = {
   "carol@example.com": { name: "Carol Jones", tier: "silver" },
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // Individual Stage Functions (independently callable, pure)
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 
 /**
  * Stage 1: Validate raw input against the transaction schema.
@@ -167,7 +167,7 @@ export const validateRaw = (raw: unknown): Result<Transaction, string> => {
 };
 
 /**
- * Stage 2: Normalize a validated transaction — currency conversion + date formatting.
+ * Stage 2: Normalize a validated transaction - currency conversion + date formatting.
  * Pure transformation, always succeeds.
  */
 export const normalize = (
@@ -181,7 +181,7 @@ export const normalize = (
   });
 
 /**
- * Stage 3: Apply business rules — minimum amount + date cutoff.
+ * Stage 3: Apply business rules - minimum amount + date cutoff.
  * Returns an error string describing which rule failed.
  */
 export const applyBusinessRules = (
@@ -198,7 +198,7 @@ export const applyBusinessRules = (
 
 /**
  * Stage 4: Enrich with customer data from external source.
- * Async — in production this would be a real API call.
+ * Async - in production this would be a real API call.
  */
 export const enrichWithCustomerData = async (
   tx: NormalizedTransaction,
@@ -213,9 +213,9 @@ export const enrichWithCustomerData = async (
   return ok({ ...tx, customerName: customer.name, tier: customer.tier });
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // Helpers (private)
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 
 const makePartialTx = (error: string): PartialTransaction => ({
   partial: true,
@@ -224,9 +224,9 @@ const makePartialTx = (error: string): PartialTransaction => ({
   error,
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // Composed Pipelines (non-instrumented, for direct use)
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 
 /** Validate + normalize as a single composed step */
 export const validateAndNormalize = flow(validateRaw, flatMapWith(normalize));
@@ -245,9 +245,9 @@ export const processTransaction = flowAsync(
   }),
 );
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Tracer — observation layer via tapWith / tapErrWith
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
+// Tracer - observation layer via tapWith / tapErrWith
+// ===============================================================================
 
 const STAGE_ORDER: readonly StageName[] = [
   "validate",
@@ -272,9 +272,9 @@ type Tracer = {
  * Create a per-record tracer. tapWith callbacks push ok entries;
  * a single tapErrWith at the end of the pipeline captures the final error.
  * buildStages() reconstructs the full stage picture after execution:
- *   - recorded entries → "ok"
- *   - first gap after last ok → "err" (the stage that failed)
- *   - everything after → "skipped"
+ *   - recorded entries -> "ok"
+ *   - first gap after last ok -> "err" (the stage that failed)
+ *   - everything after -> "skipped"
  */
 const createTracer = (): Tracer => {
   const startTime = performance.now();
@@ -328,15 +328,15 @@ const createTracer = (): Tracer => {
   };
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Traced Pipeline — same composition as processTransaction, with taps woven in
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
+// Traced Pipeline - same composition as processTransaction, with taps woven in
+// ===============================================================================
 
 /**
  * Build a traced pipeline for a single record.
  * Fresh tracer per invocation so entries don't leak between records.
  *
- * The pipeline is a genuine flowAsync composition — taps observe
+ * The pipeline is a genuine flowAsync composition - taps observe
  * each stage without breaking the railway. On the ok track, tapWith
  * records the value. On the err track, tapErrWith captures the error
  * once (subsequent tapWith calls are no-ops on the err track).
