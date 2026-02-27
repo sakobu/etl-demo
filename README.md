@@ -1,9 +1,5 @@
 # ETL Pipeline Dashboard
 
-[Live demo on StackBlitz](https://stackblitz.com/github/sakobu/etl-demo?file=src%2FApp.tsx)
-
-> If StackBlitz appears stuck on "cloning from repo", hit refresh. This is a known StackBlitz bug.
-
 An interactive demo application that visualizes Railway-Oriented Programming patterns through a simulated ETL pipeline. The schema is the single source of truth -- the same declaration drives pipeline validation, TypeScript types, and the editor form with no glue code between business logic and UI.
 
 ## What It Does
@@ -49,12 +45,12 @@ Open `http://localhost:5173` in your browser.
 
 ## Available Scripts
 
-| Script | Description |
-|---|---|
-| `npm run dev` | Start dev server with HMR |
-| `npm run build` | Type-check and build for production |
+| Script            | Description                          |
+| ----------------- | ------------------------------------ |
+| `npm run dev`     | Start dev server with HMR            |
+| `npm run build`   | Type-check and build for production  |
 | `npm run preview` | Preview the production build locally |
-| `npm run lint` | Run ESLint |
+| `npm run lint`    | Run ESLint                           |
 
 ## Project Structure
 
@@ -81,6 +77,7 @@ src/
 **Tap-based tracing** -- `tapWith` and `tapErrWith` are woven into the `flowAsync` composition to capture per-stage timing and status without mutating the pipeline result.
 
 **Batch semantics** -- the right panel shows the practical difference between three strategies:
+
 - `partition` -- separates successes from failures, useful for ETL where partial success is acceptable
 - `combine` -- fails the entire batch on the first error
 - `combineAll` -- fails the entire batch and collects every error
