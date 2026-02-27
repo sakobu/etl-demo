@@ -26,9 +26,9 @@ function DotIcon({
   }
   if (status === "err") {
     if (recovered) {
-      return <HalfCircleIcon className={`w-2 h-2 ${cls.text}`} />;
+      return <HalfCircleIcon className={`block w-2 h-2 ${cls.text}`} />;
     }
-    return <CrossIcon className={`w-2 h-2 ${cls.text}`} />;
+    return <CrossIcon className={`block w-2 h-2 ${cls.text}`} />;
   }
   // skipped
   return (
@@ -106,7 +106,7 @@ export function BatchOverview({ batchResult, onSelectRecord }: Props) {
                   {/* Left connector line */}
                   {si > 0 && (
                     <div
-                      className={`absolute right-1/2 h-px w-full ${
+                      className={`absolute top-1/2 -translate-y-1/2 right-1/2 h-px w-full ${
                         stage.status === "skipped"
                           ? "bg-surface-600/40"
                           : stage.status === "err"
