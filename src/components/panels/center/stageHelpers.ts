@@ -31,17 +31,42 @@ export function isRecoveredPartial(trace: RecordTrace): boolean {
   return isOk(trace.final) && trace.final.value.partial === true;
 }
 
-/** Tailwind color class for a stage status. */
-export function stageStatusColor(
+type StageClasses = {
+  bg: string;
+  text: string;
+  border: string;
+};
+
+/** Full Tailwind class names for a stage status. */
+export function stageStatusClasses(
   status: StageTrace["status"],
   recovered?: boolean,
-): string {
+): StageClasses {
   switch (status) {
     case "ok":
-      return "status-success";
+      return {
+        bg: "bg-status-success",
+        text: "text-status-success",
+        border: "border-status-success",
+      };
     case "err":
-      return recovered ? "status-partial" : "status-fail";
+      if (recovered) {
+        return {
+          bg: "bg-status-partial",
+          text: "text-status-partial",
+          border: "border-status-partial",
+        };
+      }
+      return {
+        bg: "bg-status-fail",
+        text: "text-status-fail",
+        border: "border-status-fail",
+      };
     case "skipped":
-      return "surface-600";
+      return {
+        bg: "bg-surface-600",
+        text: "text-surface-600",
+        border: "border-surface-600",
+      };
   }
 }

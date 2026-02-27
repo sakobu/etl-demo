@@ -2,7 +2,7 @@ import type { BatchResult, RecordTrace, StageTrace } from "../../../api/etl";
 import {
   STAGE_ORDER,
   STAGE_LABELS,
-  stageStatusColor,
+  stageStatusClasses,
   isRecoveredPartial,
 } from "./stageHelpers";
 
@@ -18,21 +18,21 @@ function DotIcon({
   status: StageTrace["status"];
   recovered?: boolean;
 }) {
-  const color = stageStatusColor(status, recovered);
+  const cls = stageStatusClasses(status, recovered);
 
   if (status === "ok") {
-    return <span className={`inline-block w-2 h-2 rounded-full bg-${color}`} />;
+    return <span className={`inline-block w-2 h-2 rounded-full ${cls.bg}`} />;
   }
   if (status === "err") {
     if (recovered) {
       return (
-        <span className={`text-${color} text-[10px] font-bold leading-none`}>
+        <span className={`${cls.text} text-[10px] font-bold leading-none`}>
           &#x25D0;
         </span>
       );
     }
     return (
-      <span className={`text-${color} text-[10px] font-bold leading-none`}>
+      <span className={`${cls.text} text-[10px] font-bold leading-none`}>
         &#x2717;
       </span>
     );
@@ -40,7 +40,7 @@ function DotIcon({
   // skipped
   return (
     <span
-      className={`inline-block w-2 h-2 rounded-full border border-${color} opacity-40`}
+      className={`inline-block w-2 h-2 rounded-full ${cls.border} opacity-40`}
     />
   );
 }
