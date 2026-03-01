@@ -209,9 +209,7 @@ export const enrichWithCustomerData = async (
   await new Promise((r) => setTimeout(r, 50 + Math.random() * 100));
 
   const customer = MOCK_CUSTOMERS[tx.customerEmail];
-  if (!customer) {
-    return err(`Customer lookup failed for ${tx.customerEmail}`);
-  }
+  if (!customer) return err(`Customer lookup failed for ${tx.customerEmail}`);
   return ok({ ...tx, customerName: customer.name, tier: customer.tier });
 };
 
@@ -239,12 +237,12 @@ export const processTransaction = flowAsync(
   flatMapWith(normalize),
   flatMapWith(applyBusinessRules),
   flatMapWith(enrichWithCustomerData),
-  orElseWith((error: string): Result<ProcessedTransaction, string> => {
-    if (error.startsWith("Customer lookup failed")) {
-      return ok(makePartialTx(error));
-    }
-    return err(error);
-  }),
+  orElseWith(
+    (error: string): Result<ProcessedTransaction, string> =>
+      error.startsWith("Customer lookup failed")
+        ? ok(makePartialTx(error))
+        : err(error),
+  ),
 );
 
 // ===============================================================================
@@ -358,12 +356,12 @@ const createTracedPipeline = () => {
     flatMapWith(enrichWithCustomerData),
     tapWith((tx: EnrichedTransaction) => tracer.recordOk("enrich", tx)),
     tapErrWith((error: string) => tracer.recordErr(error)),
-    orElseWith((error: string): Result<ProcessedTransaction, string> => {
-      if (error.startsWith("Customer lookup failed")) {
-        return ok(makePartialTx(error));
-      }
-      return err(error);
-    }),
+    orElseWith(
+      (error: string): Result<ProcessedTransaction, string> =>
+        error.startsWith("Customer lookup failed")
+          ? ok(makePartialTx(error))
+          : err(error),
+    ),
   );
 
   return { pipeline, tracer };
