@@ -87,10 +87,10 @@ src/
 **Layer-aware absent-value idioms** — use `Option<T>` and `Result<T,E>` in domain / pipeline
 code; use `T | null` in UI state.
 
-| Layer | Location | Absent-value idiom |
-|---|---|---|
-| Domain / pipeline | `etl.ts` | `Option<T>`, `Result<T,E>` |
-| UI state | `etlStore.ts` | `T \| null` |
+| Layer             | Location      | Absent-value idiom         |
+| ----------------- | ------------- | -------------------------- |
+| Domain / pipeline | `etl.ts`      | `Option<T>`, `Result<T,E>` |
+| UI state          | `etlStore.ts` | `T \| null`                |
 
 In domain code, `Option<T>` makes absence semantically explicit — `none()` vs `some(value)`,
 guarded with `isSome()`. The tracer inside `createTracer()` uses `errMsg: Option<string>` so
