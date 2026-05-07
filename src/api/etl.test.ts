@@ -1,7 +1,9 @@
 import { describe, expect, test } from "vitest";
 import { isErr, isOk } from "@railway-ts/pipelines/result";
 import {
+  enrichWithCustomerDataUsing,
   formatETLError,
+  normalize,
   processTransaction,
   runBatch,
   validateRaw,
@@ -75,5 +77,22 @@ describe("etl pipeline", () => {
     expect(isErr(result.combine)).toBe(true);
     if (!isErr(result.combine)) return;
     expect(result.combine.error.kind).toBe("businessRule");
+  });
+
+  test("captures thrown enrichment failures as infrastructure errors", async () => {
+    const result = await enrichWithCustomerDataUsing(
+      normalize(validTransaction()),
+      async () => {
+        throw new Error("network down");
+      },
+    );
+
+    expect(isErr(result)).toBe(true);
+    if (!isErr(result)) return;
+
+    expect(result.error.kind).toBe("infrastructure");
+    expect(formatETLError(result.error)).toBe(
+      "Customer lookup unavailable: network down",
+    );
   });
 });

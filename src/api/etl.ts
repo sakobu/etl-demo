@@ -8,10 +8,12 @@ import {
   ok,
   err,
   isErr,
+  mapWith,
   flatMapWith,
   tapWith,
   tapErrWith,
   orElseWith,
+  fromPromiseWithError,
   combine,
   combineAll,
   partition,
@@ -84,10 +86,17 @@ export type CustomerLookupError = {
   message: string;
 };
 
+export type InfrastructureError = {
+  kind: "infrastructure";
+  operation: "customerLookup";
+  message: string;
+};
+
 export type ETLError =
   | ValidationPipelineError
   | BusinessRuleError
-  | CustomerLookupError;
+  | CustomerLookupError
+  | InfrastructureError;
 
 export type PartialTransaction = {
   partial: true;
@@ -162,6 +171,11 @@ const MOCK_CUSTOMERS: Record<string, { name: string; tier: string }> = {
   "carol@example.com": { name: "Carol Jones", tier: "silver" },
 };
 
+type Customer = { name: string; tier: string };
+type CustomerLookup = (email: string) => Promise<Customer | undefined>;
+
+const lookupCustomer: CustomerLookup = async (email) => MOCK_CUSTOMERS[email];
+
 // ===============================================================================
 // Individual Stage Functions (independently callable, pure)
 // ===============================================================================
@@ -189,8 +203,7 @@ export const validateRaw = (raw: unknown): Result<Transaction, ETLError> => {
  */
 export const normalize = (
   tx: Transaction,
-): Result<NormalizedTransaction, ETLError> =>
-  ok({
+): NormalizedTransaction => ({
     ...tx,
     partial: false,
     amountUSD: +(tx.amount * (USD_RATES[tx.currency] ?? 1)).toFixed(2),
@@ -227,11 +240,23 @@ export const applyBusinessRules = (
  */
 export const enrichWithCustomerData = async (
   tx: NormalizedTransaction,
+): Promise<Result<EnrichedTransaction, ETLError>> =>
+  enrichWithCustomerDataUsing(tx, lookupCustomer);
+
+export const enrichWithCustomerDataUsing = async (
+  tx: NormalizedTransaction,
+  customerLookup: CustomerLookup,
 ): Promise<Result<EnrichedTransaction, ETLError>> => {
   // Simulate network latency for realistic demo feel
   await new Promise((r) => setTimeout(r, 50 + Math.random() * 100));
 
-  const customer = MOCK_CUSTOMERS[tx.customerEmail];
+  const lookupResult = await fromPromiseWithError(
+    customerLookup(tx.customerEmail),
+    toCustomerLookupInfrastructureError,
+  );
+  if (isErr(lookupResult)) return err(lookupResult.error);
+
+  const customer = lookupResult.value;
   if (!customer) {
     return err({
       kind: "customerLookup",
@@ -252,6 +277,17 @@ const formatValidationFields = (fields: Record<string, string>): string =>
     .map(([field, msg]) => `${field}: ${msg}`)
     .join("; ");
 
+const getUnknownErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
+const toCustomerLookupInfrastructureError = (
+  error: unknown,
+): InfrastructureError => ({
+  kind: "infrastructure",
+  operation: "customerLookup",
+  message: `Customer lookup unavailable: ${getUnknownErrorMessage(error)}`,
+});
+
 export const formatETLError = (error: ETLError): string => error.message;
 
 const makePartialTx = (error: CustomerLookupError): PartialTransaction => ({
@@ -271,12 +307,12 @@ const recoverCustomerLookup = (
 // ===============================================================================
 
 /** Validate + normalize as a single composed step */
-export const validateAndNormalize = flow(validateRaw, flatMapWith(normalize));
+export const validateAndNormalize = flow(validateRaw, mapWith(normalize));
 
 /** Full pipeline — compose all stages with error recovery for partial results */
 export const processTransaction = flowAsync(
   validateRaw,
-  flatMapWith(normalize),
+  mapWith(normalize),
   flatMapWith(applyBusinessRules),
   flatMapWith(enrichWithCustomerData),
   orElseWith(recoverCustomerLookup),
@@ -384,7 +420,7 @@ const createTracedPipeline = () => {
   const pipeline = flowAsync(
     validateRaw,
     tapWith((tx: Transaction) => tracer.recordOk("validate", tx)),
-    flatMapWith(normalize),
+    mapWith(normalize),
     tapWith((tx: NormalizedTransaction) => tracer.recordOk("normalize", tx)),
     flatMapWith(applyBusinessRules),
     tapWith((tx: NormalizedTransaction) =>
