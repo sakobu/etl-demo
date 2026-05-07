@@ -1,5 +1,5 @@
 import type { StageTrace } from "../../../api/etl";
-import { parseValidationErrors } from "./stageHelpers";
+import { formatStageError, parseValidationErrors } from "./stageHelpers";
 
 type Props = {
   stage: StageTrace;
@@ -25,6 +25,7 @@ export function StageDetail({ stage, recovered }: Props) {
   // err
   const isRecovered = stage.status === "err" && recovered;
   const parts = parseValidationErrors(stage.error);
+  const errorText = formatStageError(stage.error);
   const borderCls = isRecovered ? "border-status-partial/30" : "border-status-fail/30";
   const textCls = isRecovered ? "text-status-partial/90" : "text-status-fail/90";
 
@@ -40,7 +41,7 @@ export function StageDetail({ stage, recovered }: Props) {
           ))}
         </ul>
       ) : (
-        <p className={`text-xs ${textCls}`}>{stage.error}</p>
+        <p className={`text-xs ${textCls}`}>{errorText}</p>
       )}
     </div>
   );

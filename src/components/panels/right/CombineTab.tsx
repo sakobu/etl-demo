@@ -1,8 +1,12 @@
 import { isOk, type Result } from "@railway-ts/pipelines/result";
-import type { ProcessedTransaction } from "../../../api/etl";
+import {
+  formatETLError,
+  type ETLError,
+  type ProcessedTransaction,
+} from "../../../api/etl";
 
 type Props = {
-  combine: Result<ProcessedTransaction[], string>;
+  combine: Result<ProcessedTransaction[], ETLError>;
 };
 
 export function CombineTab({ combine }: Props) {
@@ -25,7 +29,7 @@ export function CombineTab({ combine }: Props) {
         <div className="rounded-md border border-status-fail/40 bg-status-fail/5 p-4">
           <p className="text-sm font-medium text-status-fail">Batch Failed</p>
           <p className="mt-2 text-xs font-mono text-text-secondary">
-            {combine.error}
+            {formatETLError(combine.error)}
           </p>
           <p className="mt-2 text-xs italic text-text-muted">
             One bad record killed the entire batch

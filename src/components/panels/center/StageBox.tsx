@@ -1,5 +1,5 @@
 import type { StageTrace } from "../../../api/etl";
-import { STAGE_LABELS } from "./stageHelpers";
+import { formatStageError, STAGE_LABELS } from "./stageHelpers";
 import { CheckIcon, HalfCircleIcon, CrossIcon } from "../../ui/icons";
 
 type Props = {
@@ -52,7 +52,9 @@ export function StageBox({ stage, isExpanded, onToggle, recovered }: Props) {
         </span>
       </div>
       {!isOk && (
-        <p className={`${isRecovered ? "text-status-partial/80" : "text-status-fail/80"} mt-1 truncate`}>{stage.error}</p>
+        <p className={`${isRecovered ? "text-status-partial/80" : "text-status-fail/80"} mt-1 truncate`}>
+          {formatStageError(stage.error)}
+        </p>
       )}
     </button>
   );

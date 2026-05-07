@@ -1,8 +1,12 @@
 import { isOk, type Result } from "@railway-ts/pipelines/result";
-import type { ProcessedTransaction } from "../../../api/etl";
+import {
+  formatETLError,
+  type ETLError,
+  type ProcessedTransaction,
+} from "../../../api/etl";
 
 type Props = {
-  combineAll: Result<ProcessedTransaction[], string[]>;
+  combineAll: Result<ProcessedTransaction[], ETLError[]>;
 };
 
 export function CombineAllTab({ combineAll }: Props) {
@@ -29,7 +33,7 @@ export function CombineAllTab({ combineAll }: Props) {
           <ol className="mt-2 flex flex-col gap-1 list-decimal list-inside">
             {combineAll.error.map((e, i) => (
               <li key={i} className="text-xs font-mono text-text-secondary">
-                {e}
+                {formatETLError(e)}
               </li>
             ))}
           </ol>

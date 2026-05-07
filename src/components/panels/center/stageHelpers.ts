@@ -1,4 +1,5 @@
-import type { RecordTrace, StageName, StageTrace } from "../../../api/etl";
+import type { ETLError, RecordTrace, StageName, StageTrace } from "../../../api/etl";
+import { formatETLError } from "../../../api/etl";
 import { isOk } from "@railway-ts/pipelines/result";
 
 export const STAGE_ORDER: StageName[] = [
@@ -21,9 +22,14 @@ export function findForkIndex(stages: StageTrace[]): number | null {
   return idx === -1 ? null : idx;
 }
 
-/** Split "field: msg; field: msg" into individual items. */
-export function parseValidationErrors(error: string): string[] {
-  return error.split("; ").filter(Boolean);
+/** Split validation fields into individual display items. */
+export function parseValidationErrors(error: ETLError): string[] {
+  if (error.kind !== "validation") return [];
+  return Object.entries(error.fields).map(([field, msg]) => `${field}: ${msg}`);
+}
+
+export function formatStageError(error: ETLError): string {
+  return formatETLError(error);
 }
 
 /** True when a stage errored but the pipeline recovered into a partial result. */

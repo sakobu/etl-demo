@@ -1,18 +1,4 @@
-import {
-  validate,
-  object,
-  required,
-  chain,
-  string,
-  nonEmpty,
-  email,
-  parseNumber,
-  min,
-  parseDate,
-  refine,
-  formatErrors,
-  type InferSchemaType,
-} from "@railway-ts/pipelines/schema";
+import * as S from "@railway-ts/pipelines/schema";
 
 import { flowAsync, flow } from "@railway-ts/pipelines/composition";
 
@@ -36,23 +22,28 @@ import {
 // Schema
 // ===============================================================================
 
-export const transactionSchema = object({
-  id: required(chain(string(), nonEmpty("ID is required"))),
-  customerEmail: required(
-    chain(string(), nonEmpty("Email is required"), email()),
+export const transactionSchema = S.object({
+  id: S.required(S.chain(S.string(), S.nonEmpty("ID is required"))),
+  customerEmail: S.required(
+    S.chain(S.string(), S.nonEmpty("Email is required"), S.email()),
   ),
-  amount: required(chain(parseNumber(), min(0.01, "Amount must be positive"))),
-  currency: required(
-    chain(
-      string(),
-      nonEmpty("Currency is required"),
-      refine((s) => ["USD", "EUR", "GBP"].includes(s), "Unsupported currency"),
+  amount: S.required(
+    S.chain(S.parseNumber(), S.min(0.01, "Amount must be positive")),
+  ),
+  currency: S.required(
+    S.chain(
+      S.string(),
+      S.nonEmpty("Currency is required"),
+      S.refine(
+        (s) => ["USD", "EUR", "GBP"].includes(s),
+        "Unsupported currency",
+      ),
     ),
   ),
-  date: required(parseDate()),
+  date: S.required(S.parseDate()),
 });
 
-export type Transaction = InferSchemaType<typeof transactionSchema>;
+export type Transaction = S.InferSchemaType<typeof transactionSchema>;
 
 export type RawRecord = {
   row: number;
@@ -74,11 +65,35 @@ export type EnrichedTransaction = NormalizedTransaction & {
   tier: string;
 };
 
+export type ValidationPipelineError = {
+  kind: "validation";
+  message: string;
+  fields: Record<string, string>;
+};
+
+export type BusinessRuleError = {
+  kind: "businessRule";
+  rule: "minimumAmount" | "dateCutoff";
+  message: string;
+};
+
+export type CustomerLookupError = {
+  kind: "customerLookup";
+  transactionId: string;
+  customerEmail: string;
+  message: string;
+};
+
+export type ETLError =
+  | ValidationPipelineError
+  | BusinessRuleError
+  | CustomerLookupError;
+
 export type PartialTransaction = {
   partial: true;
   id: string;
   message: string;
-  error: string;
+  error: CustomerLookupError;
 };
 
 export type ProcessedTransaction = EnrichedTransaction | PartialTransaction;
@@ -99,7 +114,7 @@ export type StageTraceOk = {
 export type StageTraceErr = {
   stage: StageName;
   status: "err";
-  error: string;
+  error: ETLError;
   durationMs: number;
 };
 
@@ -115,7 +130,7 @@ export type RecordTrace = {
   row: number;
   rawInput: unknown;
   stages: StageTrace[];
-  final: Result<ProcessedTransaction, string>;
+  final: Result<ProcessedTransaction, ETLError>;
 };
 
 export type BatchResult = {
@@ -128,10 +143,10 @@ export type BatchResult = {
   };
   partition: {
     successes: ProcessedTransaction[];
-    failures: string[];
+    failures: ETLError[];
   };
-  combine: Result<ProcessedTransaction[], string>;
-  combineAll: Result<ProcessedTransaction[], string[]>;
+  combine: Result<ProcessedTransaction[], ETLError>;
+  combineAll: Result<ProcessedTransaction[], ETLError[]>;
   durationMs: number;
 };
 
@@ -155,17 +170,17 @@ const MOCK_CUSTOMERS: Record<string, { name: string; tier: string }> = {
  * Stage 1: Validate raw input against the transaction schema.
  * Returns validation errors as a formatted string.
  */
-export const validateRaw = (raw: unknown): Result<Transaction, string> => {
-  const result = validate(raw, transactionSchema);
+export const validateRaw = (raw: unknown): Result<Transaction, ETLError> => {
+  const result = S.validate(raw, transactionSchema);
   if (isErr(result)) {
-    const formatted = formatErrors(result.error);
-    return err(
-      Object.entries(formatted)
-        .map(([field, msg]) => `${field}: ${msg}`)
-        .join("; "),
-    );
+    const formatted = S.formatErrors(result.error);
+    return err({
+      kind: "validation",
+      message: formatValidationFields(formatted),
+      fields: formatted,
+    });
   }
-  return result;
+  return ok(result.value);
 };
 
 /**
@@ -174,7 +189,7 @@ export const validateRaw = (raw: unknown): Result<Transaction, string> => {
  */
 export const normalize = (
   tx: Transaction,
-): Result<NormalizedTransaction, string> =>
+): Result<NormalizedTransaction, ETLError> =>
   ok({
     ...tx,
     partial: false,
@@ -188,12 +203,20 @@ export const normalize = (
  */
 export const applyBusinessRules = (
   tx: NormalizedTransaction,
-): Result<NormalizedTransaction, string> => {
+): Result<NormalizedTransaction, ETLError> => {
   if (tx.amountUSD < MINIMUM_AMOUNT_USD) {
-    return err(`Transaction below minimum ($${MINIMUM_AMOUNT_USD})`);
+    return err({
+      kind: "businessRule",
+      rule: "minimumAmount",
+      message: `Transaction below minimum ($${MINIMUM_AMOUNT_USD})`,
+    });
   }
   if (tx.date < new Date("2025-01-01")) {
-    return err("Transaction too old");
+    return err({
+      kind: "businessRule",
+      rule: "dateCutoff",
+      message: "Transaction too old",
+    });
   }
   return ok(tx);
 };
@@ -204,12 +227,19 @@ export const applyBusinessRules = (
  */
 export const enrichWithCustomerData = async (
   tx: NormalizedTransaction,
-): Promise<Result<EnrichedTransaction, string>> => {
+): Promise<Result<EnrichedTransaction, ETLError>> => {
   // Simulate network latency for realistic demo feel
   await new Promise((r) => setTimeout(r, 50 + Math.random() * 100));
 
   const customer = MOCK_CUSTOMERS[tx.customerEmail];
-  if (!customer) return err(`Customer lookup failed for ${tx.customerEmail}`);
+  if (!customer) {
+    return err({
+      kind: "customerLookup",
+      transactionId: tx.id,
+      customerEmail: tx.customerEmail,
+      message: `Customer lookup failed for ${tx.customerEmail}`,
+    });
+  }
   return ok({ ...tx, customerName: customer.name, tier: customer.tier });
 };
 
@@ -217,12 +247,24 @@ export const enrichWithCustomerData = async (
 // Helpers (private)
 // ===============================================================================
 
-const makePartialTx = (error: string): PartialTransaction => ({
+const formatValidationFields = (fields: Record<string, string>): string =>
+  Object.entries(fields)
+    .map(([field, msg]) => `${field}: ${msg}`)
+    .join("; ");
+
+export const formatETLError = (error: ETLError): string => error.message;
+
+const makePartialTx = (error: CustomerLookupError): PartialTransaction => ({
   partial: true,
-  id: "unknown",
+  id: error.transactionId,
   message: "Processed without customer data",
   error,
 });
+
+const recoverCustomerLookup = (
+  error: ETLError,
+): Result<ProcessedTransaction, ETLError> =>
+  error.kind === "customerLookup" ? ok(makePartialTx(error)) : err(error);
 
 // ===============================================================================
 // Composed Pipelines (non-instrumented, for direct use)
@@ -237,12 +279,7 @@ export const processTransaction = flowAsync(
   flatMapWith(normalize),
   flatMapWith(applyBusinessRules),
   flatMapWith(enrichWithCustomerData),
-  orElseWith(
-    (error: string): Result<ProcessedTransaction, string> =>
-      error.startsWith("Customer lookup failed")
-        ? ok(makePartialTx(error))
-        : err(error),
-  ),
+  orElseWith(recoverCustomerLookup),
 );
 
 // ===============================================================================
@@ -264,7 +301,7 @@ type TracerEntry = {
 
 type Tracer = {
   recordOk: <T>(stage: StageName, value: T) => void;
-  recordErr: (error: string) => void;
+  recordErr: (error: ETLError) => void;
   buildStages: () => StageTrace[];
 };
 
@@ -280,7 +317,7 @@ const createTracer = (): Tracer => {
   const startTime = performance.now();
   const entries: TracerEntry[] = [];
   let errTimestamp = 0;
-  let errMsg: Option<string> = none();
+  let errMsg: Option<ETLError> = none();
 
   return {
     recordOk: (stage, value) => {
@@ -355,13 +392,8 @@ const createTracedPipeline = () => {
     ),
     flatMapWith(enrichWithCustomerData),
     tapWith((tx: EnrichedTransaction) => tracer.recordOk("enrich", tx)),
-    tapErrWith((error: string) => tracer.recordErr(error)),
-    orElseWith(
-      (error: string): Result<ProcessedTransaction, string> =>
-        error.startsWith("Customer lookup failed")
-          ? ok(makePartialTx(error))
-          : err(error),
-    ),
+    tapErrWith((error: ETLError) => tracer.recordErr(error)),
+    orElseWith(recoverCustomerLookup),
   );
 
   return { pipeline, tracer };

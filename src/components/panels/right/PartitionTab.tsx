@@ -1,9 +1,13 @@
-import type { ProcessedTransaction } from "../../../api/etl";
+import {
+  formatETLError,
+  type ETLError,
+  type ProcessedTransaction,
+} from "../../../api/etl";
 import { ArrowRightIcon, DotSeparatorIcon } from "../../ui/icons";
 import { TransactionCard } from "./TransactionCard";
 
 type Props = {
-  partition: { successes: ProcessedTransaction[]; failures: string[] };
+  partition: { successes: ProcessedTransaction[]; failures: ETLError[] };
 };
 
 export function PartitionTab({ partition }: Props) {
@@ -43,7 +47,9 @@ export function PartitionTab({ partition }: Props) {
                 key={i}
                 className="rounded-md bg-surface-900 border border-status-fail/40 p-3 border-l-[3px] border-l-status-fail"
               >
-                <p className="text-xs font-mono text-text-secondary">{error}</p>
+                <p className="text-xs font-mono text-text-secondary">
+                  {formatETLError(error)}
+                </p>
               </div>
             ))}
           </div>

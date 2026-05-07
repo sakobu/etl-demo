@@ -1,4 +1,4 @@
-import type { ProcessedTransaction } from "../../../api/etl";
+import { formatETLError, type ProcessedTransaction } from "../../../api/etl";
 import { HalfCircleIcon } from "../../ui/icons";
 
 export function TransactionCard({ transaction: tx }: { transaction: ProcessedTransaction }) {
@@ -12,7 +12,9 @@ export function TransactionCard({ transaction: tx }: { transaction: ProcessedTra
           </span>
         </div>
         <p className="mt-1 text-xs text-text-muted">{tx.message}</p>
-        <p className="mt-0.5 text-xs text-status-fail font-mono">{tx.error}</p>
+        <p className="mt-0.5 text-xs text-status-fail font-mono">
+          {formatETLError(tx.error)}
+        </p>
       </div>
     );
   }

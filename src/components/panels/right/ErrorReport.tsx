@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { isOk } from "@railway-ts/pipelines/result";
-import type { RecordTrace } from "../../../api/etl";
+import { formatETLError, type RecordTrace } from "../../../api/etl";
 import { STAGE_LABELS } from "../center/stageHelpers";
 import { CheckIcon, CrossIcon, HalfCircleIcon, DashIcon, ChevronDownIcon, ChevronRightIcon } from "../../ui/icons";
 
@@ -36,7 +36,7 @@ export function ErrorReport({ records }: { records: RecordTrace[] }) {
             if (!isOk(final)) {
               statusIcon = <CrossIcon className="inline w-[1em] h-[1em] align-[-0.125em]" />;
               statusColor = "text-status-fail";
-              statusText = final.error;
+              statusText = formatETLError(final.error);
             } else if (final.value.partial) {
               statusIcon = <HalfCircleIcon className="inline w-[1em] h-[1em] align-[-0.125em]" />;
               statusColor = "text-status-partial";
@@ -81,7 +81,7 @@ export function ErrorReport({ records }: { records: RecordTrace[] }) {
                       } else if (stage.status === "err") {
                         icon = <CrossIcon className="inline w-[1em] h-[1em] align-[-0.125em]" />;
                         color = "text-status-fail";
-                        detail = stage.error;
+                        detail = formatETLError(stage.error);
                       } else {
                         icon = <DashIcon className="inline w-[1em] h-[1em] align-[-0.125em]" />;
                         color = "text-surface-500";
